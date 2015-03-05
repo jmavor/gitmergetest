@@ -1,0 +1,101 @@
+<!--
+
+ ant get-report 
+
+--> 
+	
+<project name="test" default="convert" basedir=".">
+
+<!-- ======================================================================================= -->
+
+ <path id="classpath">
+   <fileset dir="./m2u/ant_ext">
+      <include name="*.jar"/>
+   </fileset>
+ </path>
+ <taskdef name="for" classname="net.sf.antcontrib.logic.ForTask" classpathref="classpath" />
+ <taskdef name="if" classname="ise.antelope.tasks.IfTask" classpathref="classpath"/>
+ <taskdef name="var" classname="ise.antelope.tasks.Variable" classpathref="classpath" />
+	
+<!-- ======================================================================================= -->
+
+ <target name="convert" depends="">
+      	
+ 	<for param="file">
+ 	     <path>
+ 	         <fileset dir="./target/jmeter/report">
+ 	             <include name="**/*.jtl"/>
+ 	         </fileset>
+ 	     </path>
+ 	     <sequential>
+ 	           <echo message="Input File : @{file}"/>
+ 	           <echo message="Output File : @{file}.xml"/>
+ 	 	       <java jar="./m2u-master/target/m2u.jar" fork="true" dir=".">
+ 	              <arg line="--input @{file} --output @{file}.xml " />
+ 	             <classpath>
+ 	                <pathelement location="./m2u-master/target/m2u.jar"/>
+ 	                <pathelement path="${java.class.path}"/>
+ 	             </classpath> 
+ 	           </java>   	
+  	     </sequential>
+ 	</for> 	
+  
+ </target>
+	
+ <!-- ======================================================================================= -->	
+ <!-- Create Test Summary Report -->
+ <!-- Look for JMeter test FAILURE in test result file :  <failure>true</failure>  -->
+ <!-- ======================================================================================= -->   
+	 
+ <target name="get-report">
+    
+    <property name="log.dir" value="./target/jmeter/report"/>
+    <property name="report.filename" value="${log.dir}/test-result-summary.txt"/>
+	        
+    <echo file="${report.filename}" append="false">Test Results Summary${line.separator}</echo>
+    <echo file="${report.filename}" append="true">----------------------------------------------${line.separator}</echo>
+    <echo file="${report.filename}" append="true">${line.separator}</echo>
+		
+    <available file="${log.dir}" type="dir" property="is.file.present" />
+    <echo message="is.file.present : ${is.file.present}" />
+    <if name="is.file.present" exists="true" >    
+        <for param="file">
+              <path>
+                  <fileset dir="${log.dir}">
+                      <include name="**/*.jtl"/>
+                  </fileset>
+              </path>
+              <sequential>     
+                <loadfile property="is.success" srcfile="@{file}" failonerror="true" >
+                   <filterchain>
+                     <linecontainsregexp>
+                       <!-- Look for text : <failure>true</failure>  -->
+                       <regexp pattern="\x3Cfailure\x3Etrue\x3C\/failure\x3E"/>
+                     </linecontainsregexp>
+                   	 <trim/>
+                   </filterchain>
+                </loadfile>
+                <echo message="Result : ${is.success}" />
+              	<if name="is.success" exists="false"  >
+              		<echo file="${report.filename}" append="true">SUCCESS : @{file}${line.separator}</echo>
+              	  <else>
+              	    <echo file="${report.filename}" append="true">FAILURE : @{file}${line.separator} </echo>
+              	    <property name="is.result.message" value="Test Failures have occurred."/>
+              	  </else>
+              	</if>
+              	<!-- Unset property so it is not set to fixed value  --> 
+             	<var name="is.success" unset="true"/>
+             </sequential>    	
+        </for>  
+    </if>
+ 	<property name="is.result.message" value="All Test Successfull."/> 	
+	<echo message="Test Summary Result : ${is.result.message}" />
+ 	
+    <echo file="${report.filename}" append="true">${line.separator}</echo>
+    <echo file="${report.filename}" append="true">${is.result.message}${line.separator}</echo>
+	 
+ </target>
+
+<!-- ======================================================================================= -->
+	
+</project>

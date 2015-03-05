@@ -1,0 +1,155 @@
+<!-- 
+ ~~~~~~~~ S3 Automation Runner ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ usage : mvn clean verify 
+         mvn clean verify -D test-set-version=v1-1
+         mvn clean verify -D test-set-version=v1-2
+ 
+ > Note : When running via maven, property file settings are set in pom.xml propertiesJMeter section 
+ 
+ > Note : When running from jmeter, property file settings are read from ./src/test/jmeter/jmeter.properties  
+ 
+ 
+ JMeter Maven Plugin version 1.4.1supports : JMeter version 2.11 
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.example</groupId>
+  <artifactId>s3_1-5_jmeter</artifactId>
+  <packaging>jar</packaging>
+  <version>1.0-SNAPSHOT</version>
+  <name>s3_1-5_jmeter</name>
+  <url>http://maven.apache.org</url>
+         
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+     <!-- This version is required to generate summary.html reporting information  -->
+    <jmeter.maven.plugin.version>1.4.1</jmeter.maven.plugin.version> 
+    
+    <!-- ~~~~~~~~~~~ Test Configuration Settings ~~~~~~~~~~~~~~~  -->
+    <!-- <target_url>s3.qa.education.scholastic.com</target_url> -->      
+    <target_url>172.17.25.184</target_url>      
+    <target_port>80</target_port>      
+    <target_timeout>6000</target_timeout>      
+   
+    <!-- test-set-version : v1-1, v1-2, v1-5  -->
+    <test-set-version>v1-2</test-set-version>      
+    <test-set-group></test-set-group>      
+                   
+  </properties>
+         
+  <dependencies>   
+    <dependency>
+      <groupId>com.lazerycode.jmeter</groupId>
+      <artifactId>jmeter-maven-plugin</artifactId>
+      <version>${jmeter.maven.plugin.version}</version>  
+    </dependency> 
+  </dependencies>
+   
+  <build>
+        <plugins>
+            <plugin>
+                <groupId>com.lazerycode.jmeter</groupId>
+                <artifactId>jmeter-maven-plugin</artifactId>
+                <version>${jmeter.maven.plugin.version}</version>
+                <executions>
+                
+                    <execution>
+                        <id>jmeter-tests</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jmeter</goal>
+                        </goals>                        
+                        <configuration> 
+                        
+                           <!-- By default the test results are saved in a file /target/jmeter/results/<testname>-<timestamp>.jtl Further processing is easier without timestamp though.   -->
+                           <testResultsTimestamp>false</testResultsTimestamp>
+                           <!-- To simplify debugging, it is advisable to adapt the loglevel. The jmeter logs are written to the file jmeter.log.  -->
+                           <overrideRootLogLevel>DEBUG</overrideRootLogLevel>
+                           <!-- By default, the console output during a jmeter test run is suppressed.  We want to display the progress using the listener "Generate Summary Results"  (which periodically prints stats to stdout). Therefore we have to make sure,  that the jmeter output is not suppressed.    -->
+                           <suppressJMeterOutput>true</suppressJMeterOutput>
+                           <!-- If tests fail (e.g. a http-request running into a timeout), the corresponding maven   goal also fails (and subsequent goals aren't executed anymore). We want to create graphs  from test-results, no matter if some requests failed or not, so we ignore jmeter failures.   -->
+                           <ignoreResultFailures>true</ignoreResultFailures> 
+                                                
+                           <testFilesIncluded> 
+                           
+                             <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  -->
+                               
+                             <!-- Testcases : dir *getversion* : 5 Tests  -->
+                             <jMeterTestFile>testcases/${test-set-version}/S3_${test-set-version}*getversion*.jmx</jMeterTestFile>
+                            
+                             <!-- Testcases : dir *getstatus* : 30 + 5 Tests  -->
+                             <jMeterTestFile>testcases/${test-set-version}/S3_${test-set-version}*getstatus-s3id*.jmx</jMeterTestFile>
+                             <jMeterTestFile>testcases/${test-set-version}/S3_${test-set-version}*getstatus_text*.jmx</jMeterTestFile>
+                             <jMeterTestFile>testcases/${test-set-version}/S3_${test-set-version}*getstatus_application*.jmx</jMeterTestFile>
+     
+                             <!-- Testcases : dir *filterclients-expression* : 25 Tests -->
+                             <jMeterTestFile>testcases/${test-set-version}/S3_${test-set-version}*filterclients-expression*.jmx</jMeterTestFile>
+                             
+                             <!-- Testcases : dir *lookupresource* : 36 Tests -->
+                             <jMeterTestFile>testcases/${test-set-version}/S3_${test-set-version}*lookupresource*.jmx</jMeterTestFile>
+                            
+                             <!-- Testcases : dir *getresourcemapping* : 60 Tests -->
+                             <jMeterTestFile>testcases/${test-set-version}/S3_${test-set-version}*getresourcemapping*.jmx</jMeterTestFile>
+                             
+                             <!-- Testcases : dir *getexposedresources* : 20 Tests  -->
+                             <jMeterTestFile>testcases/${test-set-version}/S3_${test-set-version}*getexposedresources-s3id*.jmx</jMeterTestFile>
+                              
+                             <!-- Testcases : dir *getserver-s3id* : 20 Tests --> 
+                             <jMeterTestFile>testcases/${test-set-version}/S3_${test-set-version}*getserver-s3id*.jmx</jMeterTestFile>
+                                                             
+                             <!-- Testcases : dir *getserver-guid* : 25 Tests  -->
+                             <jMeterTestFile>testcases/${test-set-version}/S3_${test-set-version}*getserver-guid*.jmx</jMeterTestFile>
+                      
+                             <!-- Testcases : dir *getportforwards-s3id* : 20 Tests  -->
+                             <jMeterTestFile>testcases/${test-set-version}/S3_${test-set-version}*getportforwards-s3id*.jmx</jMeterTestFile>
+                             
+                             <!-- Testcases : dir *getcciserver* : 3 Tests  -->
+                             <jMeterTestFile>testcases/${test-set-version}/S3_${test-set-version}*getcciserver*.jmx</jMeterTestFile>
+                             
+                             <!-- Testcases : dir *getserverbaseurl-host-port* : 15 Tests --> 
+                             <jMeterTestFile>testcases/${test-set-version}/S3_${test-set-version}*getserverbaseurl-host-port*.jmx</jMeterTestFile>
+                          
+                             <!-- Testcases : dir *getserverbaseurlbyguid-guid* : 12 Tests  -->
+                             <jMeterTestFile>testcases/${test-set-version}/S3_${test-set-version}*getserverbaseurlbyguid-guid*.jmx</jMeterTestFile>
+                              
+                             <!-- Testcases : dir *executesamcommand-s3id* : 30 Tests -->
+                             <jMeterTestFile>testcases/${test-set-version}/S3_${test-set-version}*executesamcommand-s3id*.jmx</jMeterTestFile>
+                                                             
+                             <!-- ???? 13 Testcases : /getserverbaseurl :  Tests 
+                             <jMeterTestFile>testcases/${test-set-version}/S3_${test-set-version}*getserverbaseurl*.jmx</jMeterTestFile>
+                             -->                             
+                             <!-- 15 ???? Testcases : /getserverbaseurlbyguid : Tests 
+                             <jMeterTestFile>testcases/${test-set-version}/S3_${test-set-version}*getserverbaseurlbyguid*.jmx</jMeterTestFile>
+                             -->                             
+                             <!-- 16 ???? Testcases : /getservicemapping : Tests 
+                             <jMeterTestFile>testcases/${test-set-version}/S3_${test-set-version}*getservicemapping*.jmx</jMeterTestFile>
+                             -->
+                             
+                             <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  -->
+                              
+                             <!-- <jMeterTestFile>testcases/S3_v1-*_tc_*.jmx</jMeterTestFile> -->
+                             <!-- <jMeterTestFile>testcases/S3_v1-1_tc_getserverbaseurlbyguid-guid_application-json_connected-guid.jmx</jMeterTestFile> -->
+                             <!-- <jMeterTestFile>testcases/v1-1/S3_v1-1_tc_*.jmx</jMeterTestFile> -->
+                             
+                           </testFilesIncluded>
+                          
+                           <!-- Set Test Properties -->
+                           <!-- Note : Use only propertiesJMeter - the other tags DO NOT WORK ! -->                        
+                           <propertiesJMeter>
+                              <PROP_TEST_1>==============================================================</PROP_TEST_1>
+                              <propurl>${target_url}</propurl>
+                              <propport>${target_port}</propport>
+                              <proptimeout>${target_timeout}</proptimeout>
+                              <PROP_TEST_2>==============================================================</PROP_TEST_2>
+                          </propertiesJMeter>                                              
+                        </configuration>   
+                                                 
+                    </execution>
+                </executions>
+            </plugin> 
+                            
+        </plugins>
+  </build>
+
+</project>
